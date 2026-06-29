@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preyas Patel</title>
+<meta name="description" content="Preyas Patel — infrastructure engineer, builder, tinkerer. Portfolio, writing, and a little game.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --accent:#e0742f;            /* theme accent — try #2a78d6, #1f8a5b, #8b5cf6 */
+    --ink:#1f1d1a;
+    --muted:#6b675f;
+    --faint:#9a958c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:'Space Grotesk',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  ::-webkit-scrollbar{width:11px;height:11px}
+  ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:6px;border:3px solid transparent;background-clip:padding-box}
+  input{font-family:'JetBrains Mono',ui-monospace,monospace}
+  button{font-family:inherit}
+  @keyframes pop{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}55%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+  .mono{font-family:'JetBrains Mono',monospace}
+
+  .shell{height:100vh;display:flex;flex-direction:column;overflow:hidden;
+    background:#d7d4cc;background-image:radial-gradient(rgba(0,0,0,.06) 1px,transparent 1px);background-size:22px 22px}
+
+  /* menu bar */
+  .menubar{flex:none;height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;
+    background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.1);
+    font-family:'JetBrains Mono',monospace;font-size:12px;z-index:5000;position:relative}
+  .menubar .brand{display:flex;align-items:center;gap:9px;font-weight:600}
+  .menubar .brand i{width:9px;height:9px;background:var(--ink);border-radius:2px;display:inline-block}
+  .nav-desktop{display:flex;align-items:center;gap:4px;color:var(--muted)}
+  .nav-desktop button{background:none;border:none;font:inherit;color:inherit;cursor:pointer;padding:5px 9px;border-radius:6px}
+  .nav-desktop button:hover{background:rgba(0,0,0,.06)}
+  .nav-desktop button.play{border:1px solid rgba(0,0,0,.18);color:var(--ink);padding:5px 11px;font-weight:600}
+  .nav-desktop .clock{margin-left:8px;color:var(--faint);min-width:48px;text-align:right}
+  .menu-toggle{background:none;border:1px solid rgba(0,0,0,.18);font:inherit;color:var(--ink);cursor:pointer;padding:5px 11px;border-radius:6px;font-weight:600}
+
+  .dropdown{position:absolute;top:36px;right:8px;z-index:6000;background:#fff;border:1px solid rgba(0,0,0,.14);
+    border-radius:10px;box-shadow:0 18px 40px -14px rgba(0,0,0,.4);padding:6px;display:flex;flex-direction:column;
+    min-width:150px;font-family:'JetBrains Mono',monospace;font-size:13px}
+  .dropdown button{text-align:left;background:none;border:none;font:inherit;padding:9px 11px;border-radius:7px;cursor:pointer}
+  .dropdown button:hover{background:rgba(0,0,0,.05)}
+  .dropdown button.game{color:var(--accent);font-weight:600}
+
+  .scrollarea{flex:1;overflow:auto;position:relative}
+
+  /* windows */
+  .win{background:#fff;border:1px solid rgba(0,0,0,.13);border-radius:12px;
+    box-shadow:0 14px 36px -16px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.05)}
+  .win.game-win{border:1px solid rgba(224,116,47,.45)}
+  .titlebar{display:flex;align-items:center;gap:8px;height:32px;padding:0 11px;
+    background:linear-gradient(#fbfaf8,#f0eee8);border-bottom:1px solid rgba(0,0,0,.09);
+    border-radius:12px 12px 0 0;cursor:grab;user-select:none;font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;color:#7a756c}
+  .titlebar.grabbing{cursor:grabbing}
+  .titlebar .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .titlebar .label{margin-left:6px}
+  .game-win .titlebar{border-bottom:1px solid rgba(224,116,47,.28);background:color-mix(in srgb,var(--accent) 8%,transparent);color:var(--accent)}
+  .game-win .titlebar .label{font-weight:600}
+
+  .accent-text{color:var(--accent)}
+  .chip{font:10px 'JetBrains Mono',monospace;color:var(--muted);background:#f0eee8;border-radius:5px;padding:2px 6px}
+  .placeholder-fill{background:repeating-linear-gradient(45deg,#ecebe5,#ecebe5 7px,#f6f5f0 7px,#f6f5f0 14px)}
+
+  /* dock */
+  .dock{flex:none;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;
+    background:rgba(255,255,255,.72);backdrop-filter:blur(10px);border-top:1px solid rgba(0,0,0,.1);
+    z-index:5000;flex-wrap:wrap}
+  .dock button{font:11.5px 'JetBrains Mono',monospace;color:#3a372f;background:#fff;border:1px solid rgba(0,0,0,.12);
+    border-radius:8px;padding:6px 11px;cursor:pointer}
+  .dock button:hover{background:#f6f5f0}
+  .dock button.game{font-weight:600;border:1px solid rgba(224,116,47,.4);color:var(--accent)}
+
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ===== MENU BAR ===== -->
+  <div class="menubar">
+    <div class="brand"><i></i>preyas.dev</div>
+    <div class="nav-desktop" id="navDesktop">
+      <button data-nav="projects">Work</button>
+      <button data-nav="writing">Writing</button>
+      <button data-nav="whoami">About</button>
+      <button data-nav="contact">Contact</button>
+      <button class="play" data-nav="game">&#9656; Play</button>
+      <span class="clock" id="clock">--:--</span>
+    </div>
+    <button class="menu-toggle hidden" id="menuToggle">menu &#9662;</button>
+  </div>
+
+  <!-- mobile dropdown menu -->
+  <div class="dropdown hidden" id="dropdown">
+    <button data-nav="whoami">whoami</button>
+    <button data-nav="projects">projects/</button>
+    <button data-nav="writing">writing/</button>
+    <button class="game" data-nav="game">&#9733; game.app</button>
+    <button data-nav="contact">contact</button>
+  </div>
+
+  <!-- ===== SCROLL AREA ===== -->
+  <div class="scrollarea" id="scrollarea">
+    <div id="canvas">
+
+      <!-- ===== WHOAMI ===== -->
+      <div id="win-whoami" class="win" data-win="whoami">
+        <div class="titlebar" data-win="whoami">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="label">whoami — terminal</span>
+        </div>
+        <div style="padding:22px 24px 24px;display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:220px">
+            <div class="mono" style="font-size:12.5px;color:var(--faint);margin-bottom:10px">$ whoami</div>
+            <h1 style="margin:0 0 4px;font-size:38px;line-height:1.02;font-weight:700;letter-spacing:-.02em">Preyas Patel<span style="display:inline-block;width:11px;height:34px;background:var(--ink);margin-left:6px;vertical-align:-4px;animation:blink 1.1s steps(1) infinite"></span></h1>
+            <div class="mono accent-text" style="font-size:14px;margin-bottom:16px;font-weight:500">infrastructure engineer · builder · tinkerer</div>
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#4a463f;max-width:440px">I design and build reliable systems and delightful interfaces. Currently focused on developer tools and the web. This is my corner of the internet — poke around, and play the game while you're here.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:9px">
+              <button data-nav="projects" style="background:var(--ink);color:#fff;border:none;border-radius:8px;padding:10px 16px;font:600 13px 'Space Grotesk',sans-serif;cursor:pointer">View work</button>
+              <button data-nav="resume" style="background:#fff;color:var(--ink);border:1px solid rgba(0,0,0,.18);border-radius:8px;padding:10px 16px;font:600 13px 'Space Grotesk',sans-serif;cursor:pointer">résumé.pdf</button>
+              <button data-nav="game" style="border-radius:8px;padding:10px 16px;font:600 13px 'Space Grotesk',sans-serif;cursor:pointer;border:none;color:#fff;background:var(--accent)">&#9656; Play the game</button>
+            </div>
+          </div>
+          <div class="mono placeholder-fill" style="width:110px;height:110px;border-radius:16px;flex:none;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:var(--faint);border:1px solid rgba(0,0,0,.1)">your<br>photo</div>
+        </div>
+      </div>
+
+      <!-- ===== STATS ===== -->
+      <div id="win-stats" class="win" data-win="stats">
+        <div class="titlebar" data-win="stats">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="label">stats — overview</span>
+        </div>
+        <div style="padding:18px 20px 20px">
+          <div style="display:flex;gap:10px;margin-bottom:16px">
+            <div style="flex:1;border:1px solid rgba(0,0,0,.09);border-radius:10px;padding:12px 10px;text-align:center;background:#fcfbf8"><div style="font-size:26px;font-weight:700;letter-spacing:-.02em">6<span style="font-size:15px;color:var(--faint)">yrs</span></div><div class="mono" style="font-size:10px;color:var(--faint);margin-top:3px">experience</div></div>
+            <div style="flex:1;border:1px solid rgba(0,0,0,.09);border-radius:10px;padding:12px 10px;text-align:center;background:#fcfbf8"><div style="font-size:26px;font-weight:700;letter-spacing:-.02em">24</div><div class="mono" style="font-size:10px;color:var(--faint);margin-top:3px">projects shipped</div></div>
+            <div style="flex:1;border:1px solid rgba(0,0,0,.09);border-radius:10px;padding:12px 10px;text-align:center;background:#fcfbf8"><div class="accent-text" style="font-size:26px;font-weight:700;letter-spacing:-.02em">3.4k</div><div class="mono" style="font-size:10px;color:var(--faint);margin-top:3px">commits / yr</div></div>
+          </div>
+          <div class="mono" style="font-size:10.5px;color:var(--faint);margin-bottom:9px">commits / month</div>
+          <div style="display:flex;align-items:flex-end;gap:6px;height:60px">
+            <div style="flex:1;background:#e3e0d8;height:42%;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;background:#e3e0d8;height:60%;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;background:#e3e0d8;height:48%;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;background:#e3e0d8;height:78%;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;height:100%;border-radius:3px 3px 0 0;background:var(--accent)"></div>
+            <div style="flex:1;background:#e3e0d8;height:70%;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;background:#e3e0d8;height:55%;border-radius:3px 3px 0 0"></div>
+            <div style="flex:1;background:#e3e0d8;height:66%;border-radius:3px 3px 0 0"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PROJECTS ===== -->
+      <div id="win-projects" class="win" data-win="projects">
+        <div class="titlebar" data-win="projects">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="label">projects/</span>
+        </div>
+        <div style="padding:18px 20px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px">
+          <div style="border:1px solid rgba(0,0,0,.09);border-radius:11px;overflow:hidden;background:#fcfbf8">
+            <div class="mono placeholder-fill" style="height:84px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--faint)">screenshot</div>
+            <div style="padding:11px 12px"><div style="font-weight:600;font-size:14px;margin-bottom:3px">Project One</div><div style="font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:9px">One line on what it is and why it mattered.</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip">TS</span><span class="chip">React</span></div></div>
+          </div>
+          <div style="border:1px solid rgba(0,0,0,.09);border-radius:11px;overflow:hidden;background:#fcfbf8">
+            <div class="mono placeholder-fill" style="height:84px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--faint)">screenshot</div>
+            <div style="padding:11px 12px"><div style="font-weight:600;font-size:14px;margin-bottom:3px">Project Two</div><div style="font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:9px">One line on what it is and why it mattered.</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip">Go</span><span class="chip">Postgres</span></div></div>
+          </div>
+          <div style="border:1px solid rgba(0,0,0,.09);border-radius:11px;overflow:hidden;background:#fcfbf8">
+            <div class="mono placeholder-fill" style="height:84px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--faint)">screenshot</div>
+            <div style="padding:11px 12px"><div style="font-weight:600;font-size:14px;margin-bottom:3px">Project Three</div><div style="font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:9px">One line on what it is and why it mattered.</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="chip">Rust</span><span class="chip">WASM</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== GAME ===== -->
+      <div id="win-game" class="win game-win" data-win="game">
+        <div class="titlebar" data-win="game">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="label">&#9733; game.app</span>
+        </div>
+        <div style="padding:16px 18px 18px;display:flex;gap:14px;flex-wrap:wrap">
+          <!-- play area -->
+          <div style="flex:1;min-width:230px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px">
+              <div style="font-weight:600;font-size:14px">Catch the semicolons</div>
+              <div class="mono" style="font-size:12px;color:var(--muted)">score <b id="g-score" style="color:var(--ink)">0</b> · <span id="g-time">30s</span></div>
+            </div>
+            <div id="arena" style="position:relative;height:260px;border-radius:12px;overflow:hidden;background:#15140f;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:18px 18px;border:1px solid rgba(0,0,0,.25)">
+              <!-- targets injected here -->
+
+              <!-- idle overlay -->
+              <div id="overlay-idle" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(21,20,15,.55)">
+                <div class="mono" style="font-size:12px;color:#b8b2a4;max-width:240px;line-height:1.5;margin-bottom:16px">Tap the falling <b class="accent-text">;</b> tokens before they vanish. <span id="g-duration">30 seconds</span> on the clock.</div>
+                <button id="btn-start" style="border:none;border-radius:9px;padding:12px 24px;font:700 15px 'Space Grotesk',sans-serif;cursor:pointer;color:#fff;background:var(--accent)">&#9656; Start</button>
+                <div class="mono" style="font-size:11px;color:#7d786c;margin-top:14px">your best · <span id="g-best">—</span></div>
+              </div>
+
+              <!-- game over overlay -->
+              <div id="overlay-over" class="hidden" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(21,20,15,.78)">
+                <div class="mono" style="font-size:12px;color:#b8b2a4">time!</div>
+                <div id="g-final" style="font-size:40px;font-weight:700;color:#fff;margin:2px 0 2px">0</div>
+                <div id="g-note" class="mono" style="font-size:11px;color:var(--faint);margin-bottom:14px">add your name to the board</div>
+                <div style="display:flex;gap:7px;align-items:center">
+                  <input id="g-name" maxlength="12" placeholder="your name" style="width:120px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:9px 11px;font-size:13px;outline:none"/>
+                  <button id="btn-save" style="border:none;border-radius:8px;padding:9px 14px;font:700 13px 'Space Grotesk',sans-serif;cursor:pointer;color:#fff;background:var(--accent)">Save</button>
+                </div>
+                <button id="btn-again" style="margin-top:11px;background:none;border:1px solid rgba(255,255,255,.3);color:#e9e6df;border-radius:8px;padding:7px 14px;font:600 12px 'Space Grotesk',sans-serif;cursor:pointer">Play again</button>
+              </div>
+            </div>
+          </div>
+          <!-- leaderboard -->
+          <div style="width:170px;flex:none;display:flex;flex-direction:column">
+            <div class="mono accent-text" style="font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px">&#9733; high scores</div>
+            <div id="board"></div>
+            <div id="board-empty" class="mono" style="font-size:11px;color:var(--faint);line-height:1.6;border:1px dashed rgba(0,0,0,.16);border-radius:9px;padding:14px;text-align:center">No scores yet.<br>Be the first &#8593;</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== WRITING ===== -->
+      <div id="win-writing" class="win" data-win="writing">
+        <div class="titlebar" data-win="writing">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="label">writing/</span>
+        </div>
+        <div style="padding:8px 18px 16px">
+          <div style="display:flex;gap:11px;align-items:baseline;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.07)"><span class="mono" style="font-size:10.5px;color:var(--faint);flex:none;width:54px">2026·05</span><div><div style="font-weight:600;font-size:14px;line-height:1.3">Writing a toy database in a weekend</div><div style="font-size:11.5px;color:var(--faint);margin-top:2px">6 min read</div></div></div>
+          <div style="display:flex;gap:11px;align-items:baseline;padding:12px 0;border-bottom:1px solid rgba(0,0,0,.07)"><span class="mono" style="font-size:10.5px;color:var(--faint);flex:none;width:54px">2026·02</span><div><div style="font-weight:600;font-size:14px;line-height:1.3">What I learned shipping to prod daily</div><div style="font-size:11.5px;color:var(--faint);margin-top:2px">4 min read</div></div></div>
+          <div style="display:flex;gap:11px;align-items:baseline;padding:12px 0"><span class="mono" style="font-size:10.5px;color:var(--faint);flex:none;width:54px">2025·11</span><div><div style="font-weight:600;font-size:14px;line-height:1.3">The case for boring technology</div><div style="font-size:11.5px;color:var(--faint);margin-top:2px">8 min read</div></div></div>
+        </div>
+      </div>
+
+      <!-- ===== RESUME ===== -->
+      <div id="win-resume" class="win" data-win="resume">
+        <div class="titlebar" data-win="resume">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="label">resume</span>
+        </div>
+        <div style="padding:16px 18px 18px">
+          <div class="mono" style="font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">experience</div>
+          <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:10px"><div><div style="font-weight:600;font-size:14px">Senior Engineer</div><div style="font-size:12px;color:var(--muted)">Acme Corp</div></div><div class="mono" style="font-size:11px;color:var(--faint);white-space:nowrap">2023 — now</div></div>
+          <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:16px"><div><div style="font-weight:600;font-size:14px">Software Engineer</div><div style="font-size:12px;color:var(--muted)">Startup Inc</div></div><div class="mono" style="font-size:11px;color:var(--faint);white-space:nowrap">2020 — 23</div></div>
+          <div class="mono" style="font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px">skills</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"><span class="chip" style="font-size:11px;padding:3px 8px">TypeScript</span><span class="chip" style="font-size:11px;padding:3px 8px">Go</span><span class="chip" style="font-size:11px;padding:3px 8px">React</span><span class="chip" style="font-size:11px;padding:3px 8px">SQL</span><span class="chip" style="font-size:11px;padding:3px 8px">Rust</span></div>
+          <button style="width:100%;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:10px;font:600 13px 'Space Grotesk',sans-serif;cursor:pointer">Download résumé &#8595;</button>
+        </div>
+      </div>
+
+      <!-- ===== CONTACT ===== -->
+      <div id="win-contact" class="win" data-win="contact">
+        <div class="titlebar" data-win="contact">
+          <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="label">contact</span>
+        </div>
+        <div style="padding:20px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:20px;font-weight:700;letter-spacing:-.01em;margin-bottom:5px">Let's build something.</div>
+            <p style="margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.5">Open to roles and interesting collaborations. Fastest way to reach me is email.</p>
+            <a href="mailto:preyas.patel@outlook.com" style="display:inline-block;text-decoration:none;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px 18px;font:600 13px 'Space Grotesk',sans-serif;cursor:pointer">preyas.patel@outlook.com</a>
+          </div>
+          <div class="mono" style="display:flex;flex-direction:column;gap:8px;font-size:12.5px">
+            <a href="#" style="color:var(--ink);text-decoration:none;border:1px solid rgba(0,0,0,.14);border-radius:8px;padding:8px 14px;min-width:120px">&#8594; github</a>
+            <a href="#" style="color:var(--ink);text-decoration:none;border:1px solid rgba(0,0,0,.14);border-radius:8px;padding:8px 14px;min-width:120px">&#8594; linkedin</a>
+            <a href="#" style="color:var(--ink);text-decoration:none;border:1px solid rgba(0,0,0,.14);border-radius:8px;padding:8px 14px;min-width:120px">&#8594; x / twitter</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== DOCK ===== -->
+  <div class="dock">
+    <button data-nav="whoami">whoami</button>
+    <button data-nav="projects">projects</button>
+    <button data-nav="writing">writing</button>
+    <button class="game" data-nav="game">&#9733; game</button>
+    <button data-nav="resume">resume</button>
+    <button data-nav="contact">contact</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ----- config (was design-editor props) -----
+  var CONFIG = {
+    accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#e0742f',
+    gameSeconds: 30,   // 15–60
+    showStats: true
+  };
+  var DUR = Math.round(CONFIG.gameSeconds);
+
+  // ----- layout (desktop absolute positions) -----
+  var LAYOUT = {
+    whoami:  {x:40,  y:32,  w:560},
+    stats:   {x:632, y:32,  w:520},
+    projects:{x:40,  y:330, w:560},
+    game:    {x:632, y:330, w:520},
+    writing: {x:40,  y:720, w:272},
+    resume:  {x:332, y:720, w:280},
+    contact: {x:632, y:768, w:520}
+  };
+  var ORDER = ['whoami','stats','projects','game','writing','resume','contact'];
+
+  // ----- state -----
+  var pos = {}, z = {}, zc = 1;
+  ORDER.forEach(function(k){ pos[k] = {x:LAYOUT[k].x, y:LAYOUT[k].y}; z[k] = zc++; });
+
+  var state = {
+    mode: 'desktop',
+    menuOpen: false,
+    phase: 'idle',          // idle | playing | over
+    score: 0,
+    time: 0,
+    targets: [],            // {id, left, top, born, life}
+    board: [],
+    lastScore: 0
+  };
+
+  // ----- elements -----
+  var els = {
+    scrollarea: document.getElementById('scrollarea'),
+    canvas: document.getElementById('canvas'),
+    clock: document.getElementById('clock'),
+    navDesktop: document.getElementById('navDesktop'),
+    menuToggle: document.getElementById('menuToggle'),
+    dropdown: document.getElementById('dropdown'),
+    arena: document.getElementById('arena'),
+    gScore: document.getElementById('g-score'),
+    gTime: document.getElementById('g-time'),
+    gDuration: document.getElementById('g-duration'),
+    gBest: document.getElementById('g-best'),
+    gFinal: document.getElementById('g-final'),
+    gNote: document.getElementById('g-note'),
+    gName: document.getElementById('g-name'),
+    overlayIdle: document.getElementById('overlay-idle'),
+    overlayOver: document.getElementById('overlay-over'),
+    board: document.getElementById('board'),
+    boardEmpty: document.getElementById('board-empty'),
+    winStats: document.getElementById('win-stats')
+  };
+  var winEls = {};
+  ORDER.forEach(function(k){ winEls[k] = document.getElementById('win-'+k); });
+
+  // ----- clock -----
+  function now(){
+    return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  }
+  function tickClock(){ els.clock.textContent = now(); }
+
+  // ----- responsive / layout -----
+  function applyWindowStyle(id){
+    var el = winEls[id], s = el.style;
+    if (state.mode === 'desktop'){
+      s.position = 'absolute';
+      s.left = pos[id].x + 'px';
+      s.top = pos[id].y + 'px';
+      s.width = LAYOUT[id].w + 'px';
+      s.marginBottom = '';
+      s.zIndex = z[id];
+    } else {
+      s.position = 'relative';
+      s.left = '';
+      s.top = '';
+      s.width = '100%';
+      s.marginBottom = '16px';
+      s.zIndex = 1;
+    }
+  }
+  function applyCanvasStyle(){
+    var s = els.canvas.style;
+    if (state.mode === 'desktop'){
+      s.position = 'relative';
+      s.width = '1180px';
+      s.height = '1080px';
+      s.maxWidth = '';
+      s.padding = '';
+      s.margin = '24px auto 40px';
+    } else {
+      s.position = 'relative';
+      s.width = '';
+      s.height = '';
+      s.maxWidth = '620px';
+      s.padding = '16px 14px 40px';
+      s.margin = '0 auto';
+    }
+  }
+  function layoutAll(){
+    applyCanvasStyle();
+    ORDER.forEach(applyWindowStyle);
+  }
+  function applyMode(){
+    state.mode = window.matchMedia('(max-width: 900px)').matches ? 'mobile' : 'desktop';
+    // toggle menu bar nav vs hamburger
+    els.navDesktop.classList.toggle('hidden', state.mode !== 'desktop');
+    els.menuToggle.classList.toggle('hidden', state.mode === 'desktop');
+    if (state.mode === 'desktop'){ closeMenu(); }
+    layoutAll();
+  }
+
+  // ----- z-order -----
+  function bringToFront(id){ z[id] = zc++; if (state.mode === 'desktop') winEls[id].style.zIndex = z[id]; }
+
+  // ----- drag -----
+  var drag = null;
+  function onGrab(e){
+    var bar = e.target.closest('.titlebar');
+    if (!bar) return;
+    var id = bar.dataset.win;
+    bringToFront(id);
+    if (state.mode !== 'desktop') return;
+    drag = {id:id, sx:e.clientX, sy:e.clientY, ox:pos[id].x, oy:pos[id].y, bar:bar};
+    bar.classList.add('grabbing');
+    document.body.style.cursor = 'grabbing';
+    e.preventDefault();
+  }
+  function onMove(e){
+    if (!drag) return;
+    var nx = Math.max(0, drag.ox + (e.clientX - drag.sx));
+    var ny = Math.max(0, drag.oy + (e.clientY - drag.sy));
+    pos[drag.id] = {x:nx, y:ny};
+    var s = winEls[drag.id].style;
+    s.left = nx + 'px'; s.top = ny + 'px';
+  }
+  function onUp(){
+    if (drag){ drag.bar.classList.remove('grabbing'); drag = null; }
+    document.body.style.cursor = '';
+  }
+
+  // ----- navigation -----
+  function navTo(id){
+    closeMenu();
+    bringToFront(id);
+    var sc = els.scrollarea, el = winEls[id];
+    if (!sc || !el) return;
+    if (state.mode === 'desktop'){
+      sc.scrollTo({ top: Math.max(0, pos[id].y - 16), left: Math.max(0, pos[id].x - 24), behavior:'smooth' });
+    } else {
+      sc.scrollTo({ top: Math.max(0, el.offsetTop - 14), behavior:'smooth' });
+    }
+  }
+
+  // ----- menu -----
+  function openMenu(){ state.menuOpen = true; els.dropdown.classList.remove('hidden'); }
+  function closeMenu(){ state.menuOpen = false; els.dropdown.classList.add('hidden'); }
+  function toggleMenu(){ state.menuOpen ? closeMenu() : openMenu(); }
+
+  // ----- leaderboard -----
+  function loadBoard(){
+    var board = [];
+    try { board = JSON.parse(localStorage.getItem('pf_scores') || '[]'); } catch(e){}
+    state.board = Array.isArray(board) ? board.slice(0,8) : [];
+  }
+  function best(){
+    return state.board.length ? Math.max.apply(null, state.board.map(function(b){ return b.score; })) : 0;
+  }
+  function renderBoard(){
+    var b = state.board;
+    els.boardEmpty.classList.toggle('hidden', b.length > 0);
+    els.board.innerHTML = '';
+    if (!b.length) return;
+    var accent = CONFIG.accent;
+    b.forEach(function(row, i){
+      var div = document.createElement('div');
+      div.className = 'mono';
+      div.style.cssText = 'display:flex;align-items:center;gap:7px;font-size:12px;padding:6px 9px;border-radius:7px;color:#3a372f;background:' +
+        (i === 0 ? 'color-mix(in srgb,' + accent + ' 15%,transparent)' : (i % 2 ? 'transparent' : 'rgba(0,0,0,.035)'));
+      div.innerHTML =
+        '<span style="color:var(--faint);width:18px;display:inline-block">#' + (i+1) + '</span>' +
+        '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>' +
+        '<span style="font-weight:600"></span>';
+      div.children[1].textContent = row.name;
+      div.children[2].textContent = row.score;
+      els.board.appendChild(div);
+    });
+  }
+
+  // ----- game -----
+  var gameTimer = null;
+  var spawnAcc = 0;
+
+  function setPhase(phase){
+    state.phase = phase;
+    els.overlayIdle.classList.toggle('hidden', phase !== 'idle');
+    els.overlayOver.classList.toggle('hidden', phase !== 'over');
+  }
+  function updateHud(){
+    els.gScore.textContent = state.score;
+    els.gTime.textContent = (state.phase === 'playing' ? state.time.toFixed(1) : DUR) + 's';
+    els.gDuration.textContent = DUR + ' seconds';
+    var bst = best();
+    els.gBest.textContent = bst > 0 ? bst + ' pts' : '—';
+  }
+
+  function startGame(){
+    clearInterval(gameTimer);
+    state.score = 0;
+    state.time = DUR;
+    state.targets = [];
+    spawnAcc = 0;
+    els.gName.value = '';
+    clearTargets();
+    setPhase('playing');
+    updateHud();
+    gameTimer = setInterval(gameTick, 100);
+  }
+
+  function gameTick(){
+    if (state.phase !== 'playing') return;
+    state.time = +(state.time - 0.1).toFixed(2);
+    var t = Date.now();
+    // expire
+    state.targets = state.targets.filter(function(tg){
+      var alive = t - tg.born < tg.life;
+      if (!alive) removeTargetEl(tg.id);
+      return alive;
+    });
+    // spawn (speeds up in second half)
+    spawnAcc += 0.1;
+    var interval = state.time > DUR * 0.5 ? 0.62 : 0.46;
+    if (spawnAcc >= interval){
+      spawnAcc = 0;
+      var tg = {
+        id: t + '-' + Math.random().toFixed(3),
+        left: 6 + Math.random() * 82,
+        top: 8 + Math.random() * 78,
+        born: t,
+        life: 1150
+      };
+      state.targets.push(tg);
+      addTargetEl(tg);
+    }
+    if (state.time <= 0){
+      clearInterval(gameTimer);
+      state.time = 0;
+      state.lastScore = state.score;
+      clearTargets();
+      state.targets = [];
+      endGame();
+      return;
+    }
+    els.gScore.textContent = state.score;
+    els.gTime.textContent = state.time.toFixed(1) + 's';
+  }
+
+  function endGame(){
+    var bst = best();
+    els.gFinal.textContent = state.lastScore;
+    els.gNote.textContent = (state.lastScore >= bst && bst > 0 && state.lastScore > 0)
+      ? 'new personal best!'
+      : 'add your name to the board';
+    setPhase('over');
+  }
+
+  function hit(id){
+    state.score += 1;
+    state.targets = state.targets.filter(function(t){ return t.id !== id; });
+    removeTargetEl(id);
+    els.gScore.textContent = state.score;
+  }
+
+  // target DOM management (keyed so the pop animation isn't restarted each tick)
+  function addTargetEl(tg){
+    var b = document.createElement('button');
+    b.dataset.id = tg.id;
+    b.textContent = ';';
+    b.style.cssText = 'position:absolute;left:' + tg.left + '%;top:' + tg.top + '%;transform:translate(-50%,-50%);' +
+      'width:40px;height:40px;border-radius:10px;cursor:pointer;border:none;color:#fff;background:var(--accent);' +
+      "font:700 22px 'JetBrains Mono',monospace;line-height:40px;padding:0;" +
+      'box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 50%,transparent);animation:pop .18s ease-out';
+    b.addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+    b.addEventListener('click', function(){ hit(tg.id); });
+    els.arena.appendChild(b);
+  }
+  function removeTargetEl(id){
+    var sel = els.arena.querySelector('button[data-id="' + CSS.escape(id) + '"]');
+    if (sel) sel.remove();
+  }
+  function clearTargets(){
+    els.arena.querySelectorAll('button[data-id]').forEach(function(n){ n.remove(); });
+  }
+
+  function submitScore(){
+    var name = (els.gName.value || '').trim().slice(0,12) || 'anon';
+    state.board = state.board.concat([{name:name, score:state.lastScore}])
+      .sort(function(a,b){ return b.score - a.score; })
+      .slice(0,8);
+    try { localStorage.setItem('pf_scores', JSON.stringify(state.board)); } catch(e){}
+    renderBoard();
+    setPhase('idle');
+    updateHud();
+  }
+
+  // ----- wiring -----
+  function init(){
+    // stats visibility
+    if (!CONFIG.showStats){ els.winStats.remove(); delete winEls.stats; }
+
+    // nav buttons (everywhere with data-nav)
+    document.querySelectorAll('[data-nav]').forEach(function(btn){
+      btn.addEventListener('click', function(){ navTo(btn.dataset.nav); });
+    });
+
+    // titlebar drag
+    document.querySelectorAll('.titlebar').forEach(function(bar){
+      bar.addEventListener('pointerdown', onGrab);
+    });
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+
+    // menu
+    els.menuToggle.addEventListener('click', function(e){ e.stopPropagation(); toggleMenu(); });
+    document.addEventListener('click', function(e){
+      if (state.menuOpen && !els.dropdown.contains(e.target) && e.target !== els.menuToggle) closeMenu();
+    });
+
+    // game controls
+    document.getElementById('btn-start').addEventListener('click', startGame);
+    document.getElementById('btn-again').addEventListener('click', startGame);
+    document.getElementById('btn-save').addEventListener('click', submitScore);
+    els.gName.addEventListener('keydown', function(e){ if (e.key === 'Enter') submitScore(); });
+
+    // responsive
+    var mq = window.matchMedia('(max-width: 900px)');
+    (mq.addEventListener ? mq.addEventListener.bind(mq,'change') : mq.addListener.bind(mq))(applyMode);
+
+    // boot
+    loadBoard();
+    renderBoard();
+    applyMode();
+    setPhase('idle');
+    updateHud();
+    tickClock();
+    setInterval(tickClock, 20000);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>

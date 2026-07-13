@@ -12,6 +12,11 @@ import {
 } from "@/lib/portfolio-data";
 import DesktopWindow from "@/components/DesktopWindow";
 import {
+  fetchScores,
+  submitScore as persistScore,
+  type BoardEntry,
+} from "@/lib/scores";
+import {
   ALL_WINDOW_IDS,
   computeCanvasSize,
   initialRects,
@@ -45,7 +50,6 @@ const ALL_ORDER = [...ALL_WINDOW_IDS] as WinId[];
 type Mode = "desktop" | "mobile";
 type Phase = "idle" | "playing" | "over";
 type Target = { id: string; left: number; top: number; born: number; life: number };
-type BoardEntry = { name: string; score: number };
 type DragState = {
   id: WinId;
   sx: number;
@@ -72,16 +76,6 @@ function initialZ(): Record<WinId, number> {
     z[id] = i + 1;
   });
   return z;
-}
-
-function loadBoard(): BoardEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const board = JSON.parse(localStorage.getItem("pf_scores") || "[]");
-    return Array.isArray(board) ? board.slice(0, 8) : [];
-  } catch {
-    return [];
-  }
 }
 
 function now() {
@@ -282,7 +276,13 @@ export default function PortfolioShell() {
   }, []);
 
   useEffect(() => {
-    setBoard(loadBoard());
+    let active = true;
+    fetchScores().then((scores) => {
+      if (active) setBoard(scores);
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -389,18 +389,9 @@ export default function PortfolioShell() {
   }, []);
 
   const submitScore = useCallback(() => {
-    const name = (playerName.trim() || "anon").slice(0, 12);
-    const next = [...board, { name, score: lastScore }]
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 8);
-    setBoard(next);
-    try {
-      localStorage.setItem("pf_scores", JSON.stringify(next));
-    } catch {
-      /* ignore */
-    }
     setPhase("idle");
-  }, [board, lastScore, playerName]);
+    persistScore(playerName, lastScore).then(setBoard);
+  }, [lastScore, playerName]);
 
   const bst = best();
   const gameNote =

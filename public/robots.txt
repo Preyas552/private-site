@@ -1,0 +1,77 @@
+# robots.txt for https://preyas.ca
+#
+# Policy: this is a public portfolio. Crawl it, index it, and cite it in
+# answers. Do not use it as model training data.
+#
+# RFC 9309 (Robots Exclusion Protocol) - https://www.rfc-editor.org/rfc/rfc9309
+# Content Signals                      - https://contentsignals.org/
+
+# --- Default policy -------------------------------------------------------
+# The site is a client-rendered single page, so crawlers must fetch /_next/
+# assets to render it at all. Those are deliberately NOT blocked.
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+Disallow: /404.html
+
+# --- Search engines: allowed ----------------------------------------------
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# --- AI answer engines: allowed -------------------------------------------
+# Live retrieval that cites and links back, plus user-triggered fetches where
+# a person explicitly asks an assistant to open this page.
+User-agent: OAI-SearchBot
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+
+User-agent: Claude-Web
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+
+User-agent: PerplexityBot
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+# --- Model training crawlers: disallowed -----------------------------------
+User-agent: GPTBot
+Content-Signal: ai-train=no
+Disallow: /
+
+User-agent: ClaudeBot
+Content-Signal: ai-train=no
+Disallow: /
+
+User-agent: Google-Extended
+Content-Signal: ai-train=no
+Disallow: /
+
+User-agent: Applebot-Extended
+Content-Signal: ai-train=no
+Disallow: /
+
+User-agent: meta-externalagent
+Content-Signal: ai-train=no
+Disallow: /
+
+User-agent: CCBot
+Content-Signal: ai-train=no
+Disallow: /
+
+User-agent: Bytespider
+Content-Signal: ai-train=no
+Disallow: /
+
+Sitemap: https://preyas.ca/sitemap.xml

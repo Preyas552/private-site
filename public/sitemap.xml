@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap for https://preyas.ca - https://www.sitemaps.org/protocol.html
+
+  The portfolio is a single client-rendered page; the section "windows"
+  (projects, writing, whoami, game, resume, contact) are in-page views driven
+  by navTo() in components/PortfolioShell.tsx, not routable URLs. Listing them
+  here would advertise URLs that 404, so only the canonical root is listed.
+  Add entries here if those sections ever become real routes.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://preyas.ca/</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

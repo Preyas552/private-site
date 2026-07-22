@@ -40,14 +40,20 @@ import {
 const CONFIG = {
   accent: "#e0742f",
   gameSeconds: 30,
-  showStats: true,
+  // Stats window retired — the tiles and bar chart were placeholder numbers,
+  // and invented metrics read as filler on an engineering portfolio.
+  showStats: false,
 } as const;
 
 const DUR = Math.round(CONFIG.gameSeconds);
 
+// Must match the key read by the pre-paint theme script in app/layout.tsx.
+const THEME_STORAGE_KEY = "pf_theme";
+
 const ALL_ORDER = [...ALL_WINDOW_IDS] as WinId[];
 
 type Mode = "desktop" | "mobile";
+type Theme = "light" | "dark";
 type Phase = "idle" | "playing" | "over";
 type Target = { id: string; left: number; top: number; born: number; life: number };
 type DragState = {
@@ -85,6 +91,8 @@ function now() {
 export default function PortfolioShell() {
   const [mode, setMode] = useState<Mode>("desktop");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>("light");
+  const [photoOk, setPhotoOk] = useState(true);
   const [clock, setClock] = useState("--:--");
   const [rects, setRects] = useState<Record<WinId, WinRect>>(initialRects);
   const [z, setZ] = useState<Record<WinId, number>>(initialZ);
@@ -121,6 +129,26 @@ export default function PortfolioShell() {
   }, []);
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  // The inline script in app/layout.tsx has already resolved and applied the
+  // theme before paint; adopt whatever it decided so React state matches the DOM.
+  useEffect(() => {
+    const applied = document.documentElement.getAttribute("data-theme");
+    if (applied === "dark" || applied === "light") setTheme(applied);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next: Theme = prev === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, next);
+      } catch {
+        /* ignore — private mode, etc. */
+      }
+      return next;
+    });
+  }, []);
 
   const navTo = useCallback(
     (id: WinId) => {
@@ -428,7 +456,7 @@ export default function PortfolioShell() {
               title="Reset window positions and sizes"
               style={{
                 background: "none",
-                border: "1px solid rgba(0,0,0,.14)",
+                border: "1px solid var(--border)",
                 borderRadius: 6,
                 padding: "4px 9px",
                 cursor: "pointer",
@@ -439,6 +467,17 @@ export default function PortfolioShell() {
               reset layout
             </button>
           )}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="theme-toggle"
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+          >
+            {theme === "dark" ? "☀" : "☾"}
+          </button>
           <span className="clock">{clock}</span>
         </div>
         <button
@@ -472,6 +511,9 @@ export default function PortfolioShell() {
         </button>
         <button type="button" onClick={() => navTo("contact")}>
           contact
+        </button>
+        <button type="button" className="theme-row" onClick={toggleTheme}>
+          {theme === "dark" ? "☀ light mode" : "☾ dark mode"}
         </button>
       </div>
 
@@ -519,6 +561,7 @@ export default function PortfolioShell() {
                 >
                   Preyas Patel
                   <span
+                    className="cursor"
                     style={{
                       display: "inline-block",
                       width: 11,
@@ -541,7 +584,7 @@ export default function PortfolioShell() {
                     margin: "0 0 20px",
                     fontSize: 15,
                     lineHeight: 1.6,
-                    color: "#4a463f",
+                    color: "var(--body)",
                     maxWidth: 440,
                   }}
                 >
@@ -553,7 +596,7 @@ export default function PortfolioShell() {
                     onClick={() => navTo("projects")}
                     style={{
                       background: "var(--ink)",
-                      color: "#fff",
+                      color: "var(--on-ink)",
                       border: "none",
                       borderRadius: 8,
                       padding: "10px 16px",
@@ -568,9 +611,9 @@ export default function PortfolioShell() {
                     type="button"
                     onClick={() => navTo("resume")}
                     style={{
-                      background: "#fff",
+                      background: "var(--surface)",
                       color: "var(--ink)",
-                      border: "1px solid rgba(0,0,0,.18)",
+                      border: "1px solid var(--border-strong)",
                       borderRadius: 8,
                       padding: "10px 16px",
                       fontWeight: 600,
@@ -598,8 +641,11 @@ export default function PortfolioShell() {
                   </button>
                 </div>
               </div>
+              {/* Drop a square headshot at public/me.jpg. If the file is absent
+                  the <img> fails and we fall back to the hatched placeholder,
+                  so a missing photo never renders a broken-image icon. */}
               <div
-                className="mono placeholder-fill"
+                className="mono placeholder-fill avatar"
                 style={{
                   width: 110,
                   height: 110,
@@ -611,12 +657,33 @@ export default function PortfolioShell() {
                   textAlign: "center",
                   fontSize: 10,
                   color: "var(--faint)",
-                  border: "1px solid rgba(0,0,0,.1)",
+                  border: "1px solid var(--border)",
+                  overflow: "hidden",
+                  position: "relative",
                 }}
               >
-                your
-                <br />
-                photo
+                {photoOk ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src="/me.jpg"
+                    alt="Preyas Patel"
+                    width={110}
+                    height={110}
+                    onError={() => setPhotoOk(false)}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                ) : (
+                  <>
+                    your
+                    <br />
+                    photo
+                  </>
+                )}
               </div>
             </div>
           </DesktopWindow>
@@ -644,11 +711,11 @@ export default function PortfolioShell() {
                       key={stat.label}
                       style={{
                         flex: 1,
-                        border: "1px solid rgba(0,0,0,.09)",
+                        border: "1px solid var(--border-soft)",
                         borderRadius: 10,
                         padding: "12px 10px",
                         textAlign: "center",
-                        background: "#fcfbf8",
+                        background: "var(--surface-2)",
                       }}
                     >
                       <div
@@ -732,10 +799,10 @@ export default function PortfolioShell() {
                 <div
                   key={p.name}
                   style={{
-                    border: "1px solid rgba(0,0,0,.09)",
+                    border: "1px solid var(--border-soft)",
                     borderRadius: 11,
                     overflow: "hidden",
-                    background: "#fcfbf8",
+                    background: "var(--surface-2)",
                   }}
                 >
                   <div
@@ -1029,13 +1096,13 @@ export default function PortfolioShell() {
                         fontSize: 12,
                         padding: "6px 9px",
                         borderRadius: 7,
-                        color: "#3a372f",
+                        color: "var(--ink)",
                         background:
                           i === 0
                             ? `color-mix(in srgb, ${CONFIG.accent} 15%, transparent)`
                             : i % 2
                               ? "transparent"
-                              : "rgba(0,0,0,.035)",
+                              : "var(--hover)",
                       }}
                     >
                       <span
@@ -1067,7 +1134,7 @@ export default function PortfolioShell() {
                       fontSize: 11,
                       color: "var(--faint)",
                       lineHeight: 1.6,
-                      border: "1px dashed rgba(0,0,0,.16)",
+                      border: "1px dashed var(--border-strong)",
                       borderRadius: 9,
                       padding: 14,
                       textAlign: "center",
@@ -1108,7 +1175,7 @@ export default function PortfolioShell() {
                     padding: "12px 0",
                     borderBottom:
                       i < arr.length - 1
-                        ? "1px solid rgba(0,0,0,.07)"
+                        ? "1px solid var(--border-soft)"
                         : undefined,
                   }}
                 >
@@ -1232,7 +1299,7 @@ export default function PortfolioShell() {
                 style={{
                   width: "100%",
                   background: "var(--ink)",
-                  color: "#fff",
+                  color: "var(--on-ink)",
                   border: "none",
                   borderRadius: 8,
                   padding: 10,
@@ -1319,7 +1386,7 @@ export default function PortfolioShell() {
                     style={{
                       color: "var(--ink)",
                       textDecoration: "none",
-                      border: "1px solid rgba(0,0,0,.14)",
+                      border: "1px solid var(--border)",
                       borderRadius: 8,
                       padding: "8px 14px",
                       minWidth: 120,

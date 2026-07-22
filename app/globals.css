@@ -1,8 +1,90 @@
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   Light is the default. Dark values live in the single [data-theme="dark"]
+   block below — the inline script in app/layout.tsx resolves the system
+   preference to an explicit data-theme attribute before first paint, so we
+   never need to duplicate the palette inside a prefers-color-scheme query.
+   --------------------------------------------------------------------------- */
 :root {
   --accent: #e0742f;
   --ink: #1f1d1a;
   --muted: #6b675f;
   --faint: #9a958c;
+  --body: #4a463f;
+  /* Text/icon color for elements filled with --ink (e.g. primary buttons).
+     Must invert with the theme or the fill and label collide. */
+  --on-ink: #fff;
+
+  /* Surfaces */
+  --bg: #d7d4cc;
+  --dot: rgba(0, 0, 0, 0.06);
+  --surface: #fff;
+  --surface-2: #fcfbf8;
+  --surface-3: #f0eee8;
+  --surface-hover: #f6f5f0;
+  --bar: rgba(255, 255, 255, 0.72);
+  --title-from: #fbfaf8;
+  --title-to: #f0eee8;
+  --title-ink: #7a756c;
+
+  /* Lines */
+  --border: rgba(0, 0, 0, 0.13);
+  --border-soft: rgba(0, 0, 0, 0.09);
+  --border-strong: rgba(0, 0, 0, 0.18);
+  --hover: rgba(0, 0, 0, 0.06);
+  --grip: rgba(0, 0, 0, 0.22);
+
+  /* Placeholder hatching */
+  --hatch-a: #ecebe5;
+  --hatch-b: #f6f5f0;
+
+  /* Warm-tinted shadows so windows sit on the paper canvas instead of
+     floating on cool grey. Base hue matches --ink rather than pure black. */
+  --shadow-win:
+    0 14px 36px -16px rgba(47, 33, 20, 0.36),
+    0 2px 6px rgba(47, 33, 20, 0.06);
+  --shadow-pop: 0 18px 40px -14px rgba(47, 33, 20, 0.34);
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  /* Warm near-black rather than neutral grey, so the paper metaphor still
+     reads at night. Accent lifts slightly to hold contrast on dark surfaces. */
+  --accent: #f0873f;
+  --ink: #f2eee6;
+  --muted: #a8a296;
+  --faint: #7d786c;
+  --body: #d5cfc4;
+  --on-ink: #14130f;
+
+  --bg: #14130f;
+  --dot: rgba(255, 255, 255, 0.05);
+  --surface: #1c1a16;
+  --surface-2: #221f1a;
+  --surface-3: #2a261f;
+  --surface-hover: #262218;
+  --bar: rgba(28, 26, 22, 0.78);
+  --title-from: #232019;
+  --title-to: #1b1915;
+  --title-ink: #918a7d;
+
+  --border: rgba(255, 255, 255, 0.12);
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --hover: rgba(255, 255, 255, 0.07);
+  --grip: rgba(255, 255, 255, 0.26);
+
+  --hatch-a: #232019;
+  --hatch-b: #2b271f;
+
+  --shadow-win:
+    0 14px 36px -16px rgba(0, 0, 0, 0.7),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 18px 40px -14px rgba(0, 0, 0, 0.66);
+
+  color-scheme: dark;
 }
 
 * {
@@ -18,6 +100,7 @@ body {
 body {
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
   color: var(--ink);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -27,7 +110,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.18);
+  background: var(--border-strong);
   border-radius: 6px;
   border: 3px solid transparent;
   background-clip: padding-box;
@@ -39,6 +122,31 @@ input {
 
 button {
   font-family: inherit;
+}
+
+/* Keyboard focus ring — accent-tinted, only shown for keyboard users, not
+   on mouse click. Applies to every button and link across the desktop UI. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* The blink keyframe ends at opacity 0, so collapsing it to a single
+     iteration would leave the terminal cursor permanently invisible. */
+  .cursor {
+    animation: none !important;
+    opacity: 1 !important;
+  }
 }
 
 @keyframes pop {
@@ -75,8 +183,8 @@ button {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #d7d4cc;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background: var(--bg);
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
@@ -87,9 +195,9 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 0 14px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--bar);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border);
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 12px;
   z-index: 5000;
@@ -129,14 +237,40 @@ button {
 }
 
 .nav-desktop button:hover {
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--hover);
 }
 
 .nav-desktop button.play {
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border-strong);
   color: var(--ink);
   padding: 5px 11px;
   font-weight: 600;
+}
+
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: 4px;
+}
+
+.theme-toggle:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.dropdown button.theme-row {
+  border-top: 1px solid var(--border-soft);
+  border-radius: 0 0 7px 7px;
+  margin-top: 4px;
+  padding-top: 11px;
+  color: var(--muted);
 }
 
 .nav-desktop .clock {
@@ -148,7 +282,7 @@ button {
 
 .menu-toggle {
   background: none;
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border-strong);
   font: inherit;
   color: var(--ink);
   cursor: pointer;
@@ -162,10 +296,10 @@ button {
   top: 36px;
   right: 8px;
   z-index: 6000;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-pop);
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -185,7 +319,7 @@ button {
 }
 
 .dropdown button:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--hover);
 }
 
 .dropdown button.game {
@@ -200,12 +334,10 @@ button {
 }
 
 .win {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.13);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow:
-    0 14px 36px -16px rgba(0, 0, 0, 0.4),
-    0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-win);
   position: relative;
 }
 
@@ -219,14 +351,14 @@ button {
   gap: 8px;
   height: 32px;
   padding: 0 11px;
-  background: linear-gradient(#fbfaf8, #f0eee8);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+  background: linear-gradient(var(--title-from), var(--title-to));
+  border-bottom: 1px solid var(--border-soft);
   border-radius: 12px 12px 0 0;
   cursor: grab;
   user-select: none;
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 11.5px;
-  color: #7a756c;
+  color: var(--title-ink);
 }
 
 .titlebar.grabbing {
@@ -261,7 +393,7 @@ button {
 .chip {
   font: 10px var(--font-jetbrains-mono), ui-monospace, monospace;
   color: var(--muted);
-  background: #f0eee8;
+  background: var(--surface-3);
   border-radius: 5px;
   padding: 2px 6px;
 }
@@ -269,10 +401,10 @@ button {
 .placeholder-fill {
   background: repeating-linear-gradient(
     45deg,
-    #ecebe5,
-    #ecebe5 7px,
-    #f6f5f0 7px,
-    #f6f5f0 14px
+    var(--hatch-a),
+    var(--hatch-a) 7px,
+    var(--hatch-b) 7px,
+    var(--hatch-b) 14px
   );
 }
 
@@ -283,25 +415,25 @@ button {
   justify-content: center;
   gap: 7px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--bar);
   backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--border);
   z-index: 5000;
   flex-wrap: wrap;
 }
 
 .dock button {
   font: 11.5px var(--font-jetbrains-mono), ui-monospace, monospace;
-  color: #3a372f;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 6px 11px;
   cursor: pointer;
 }
 
 .dock button:hover {
-  background: #f6f5f0;
+  background: var(--surface-hover);
 }
 
 .dock button.game {
@@ -338,8 +470,8 @@ button {
   bottom: 4px;
   width: 8px;
   height: 8px;
-  border-right: 2px solid rgba(0, 0, 0, 0.22);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.22);
+  border-right: 2px solid var(--grip);
+  border-bottom: 2px solid var(--grip);
   border-radius: 0 0 2px 0;
 }
 

@@ -4,9 +4,6 @@ import {
   EXPERIENCE,
   PROJECTS,
   SKILLS,
-  STAT_CHART_HEIGHTS,
-  STAT_CHART_LABEL,
-  STATS,
   WHOAMI,
   WRITING,
 } from "@/lib/portfolio-data";
@@ -431,7 +428,7 @@ export default function PortfolioShell() {
     <div className="shell">
       <div className="menubar">
         <div className="brand">
-          <i />preyas.dev
+          <i />preyas.ca
         </div>
         <div className={`nav-desktop${mode !== "desktop" ? " hidden" : ""}`}>
           <button type="button" onClick={() => navTo("projects")}>
@@ -688,90 +685,6 @@ export default function PortfolioShell() {
             </div>
           </DesktopWindow>
 
-          {/* STATS */}
-          {CONFIG.showStats && (
-            <DesktopWindow
-              id="stats"
-              label="stats — overview"
-              rect={rects.stats}
-              zIndex={z.stats}
-              mode={mode}
-              isGrabbing={grabbingId === "stats"}
-              isResizing={resizingId === "stats"}
-              onTitlePointerDown={onGrab}
-              onResizePointerDown={onResizeStart}
-              setRef={(el) => {
-                winRefs.current.stats = el ?? undefined;
-              }}
-            >
-              <div style={{ padding: "18px 20px 20px" }}>
-                <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-                  {STATS.map((stat) => (
-                    <div
-                      key={stat.label}
-                      style={{
-                        flex: 1,
-                        border: "1px solid var(--border-soft)",
-                        borderRadius: 10,
-                        padding: "12px 10px",
-                        textAlign: "center",
-                        background: "var(--surface-2)",
-                      }}
-                    >
-                      <div
-                        className={"accent" in stat && stat.accent ? "accent-text" : undefined}
-                        style={{
-                          fontSize: 26,
-                          fontWeight: 700,
-                          letterSpacing: "-0.02em",
-                        }}
-                      >
-                        {stat.val}
-                        {stat.sub && (
-                          <span style={{ fontSize: 15, color: "var(--faint)" }}>
-                            {stat.sub}
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        className="mono"
-                        style={{ fontSize: 10, color: "var(--faint)", marginTop: 3 }}
-                      >
-                        {stat.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div
-                  className="mono"
-                  style={{ fontSize: 10.5, color: "var(--faint)", marginBottom: 9 }}
-                >
-                  {STAT_CHART_LABEL}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-end",
-                    gap: 6,
-                    height: 60,
-                  }}
-                >
-                  {STAT_CHART_HEIGHTS.map((h, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        flex: 1,
-                        height: `${h}%`,
-                        borderRadius: "3px 3px 0 0",
-                        background: i === 4 ? "var(--accent)" : "#e3e0d8",
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </DesktopWindow>
-          )}
-
           {/* PROJECTS */}
           <DesktopWindow
             id="projects"
@@ -795,55 +708,64 @@ export default function PortfolioShell() {
                 gap: 14,
               }}
             >
-              {PROJECTS.map((p) => (
-                <div
-                  key={p.name}
-                  style={{
-                    border: "1px solid var(--border-soft)",
-                    borderRadius: 11,
-                    overflow: "hidden",
-                    background: "var(--surface-2)",
-                  }}
-                >
-                  <div
-                    className="mono placeholder-fill"
-                    style={{
-                      height: 64,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 9,
-                      color: "var(--faint)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                    }}
-                  >
-                    {p.category ?? "project"}
-                  </div>
-                  <div style={{ padding: "11px 12px" }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 3 }}>
-                      {p.name}
-                    </div>
+              {PROJECTS.map((p) => {
+                const linked = Boolean(p.url);
+                const CardTag = linked ? "a" : "div";
+                const linkProps = linked
+                  ? {
+                      href: p.url,
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      "aria-label": `${p.name} (opens in a new tab)`,
+                    }
+                  : {};
+                return (
+                  <CardTag key={p.name} className="project-card" {...linkProps}>
+                    {linked && (
+                      <span className="go mono" aria-hidden>
+                        &#8599;
+                      </span>
+                    )}
                     <div
+                      className="mono placeholder-fill"
                       style={{
-                        fontSize: 12,
-                        color: "var(--muted)",
-                        lineHeight: 1.45,
-                        marginBottom: 9,
+                        height: 64,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 9,
+                        color: "var(--faint)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
                       }}
                     >
-                      {p.desc}
+                      {p.category ?? "project"}
                     </div>
-                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                      {p.tags.map((t) => (
-                        <span key={t} className="chip">
-                          {t}
-                        </span>
-                      ))}
+                    <div style={{ padding: "11px 12px" }}>
+                      <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 3 }}>
+                        {p.name}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "var(--muted)",
+                          lineHeight: 1.45,
+                          marginBottom: 9,
+                        }}
+                      >
+                        {p.desc}
+                      </div>
+                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                        {p.tags.map((t) => (
+                          <span key={t} className="chip">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </CardTag>
+                );
+              })}
             </div>
           </DesktopWindow>
 
@@ -1194,7 +1116,23 @@ export default function PortfolioShell() {
                     <div
                       style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3 }}
                     >
-                      {post.title}
+                      {post.url ? (
+                        <a
+                          className="writing-link"
+                          href={post.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${post.title} (opens in a new tab)`}
+                        >
+                          {post.title}
+                          <span className="mono go-inline" aria-hidden>
+                            {" "}
+                            &#8599;
+                          </span>
+                        </a>
+                      ) : (
+                        post.title
+                      )}
                     </div>
                     <div
                       style={{

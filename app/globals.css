@@ -390,6 +390,73 @@ button {
   color: var(--accent);
 }
 
+.project-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 11px;
+  overflow: hidden;
+  background: var(--surface-2);
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+}
+
+/* Clickable variant: lift + accent border on hover/focus. */
+a.project-card {
+  cursor: pointer;
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease,
+    border-color 0.14s ease;
+}
+
+a.project-card:hover,
+a.project-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: var(--shadow-win);
+}
+
+/* Corner arrow, only on linked cards, nudges out on hover. */
+a.project-card .go {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 12px;
+  color: var(--faint);
+  transition:
+    transform 0.14s ease,
+    color 0.14s ease;
+}
+
+a.project-card:hover .go,
+a.project-card:focus-visible .go {
+  color: var(--accent);
+  transform: translate(2px, -2px);
+}
+
+.writing-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.14s ease;
+}
+
+.writing-link:hover,
+.writing-link:focus-visible {
+  color: var(--accent);
+}
+
+.writing-link .go-inline {
+  font-size: 11px;
+  color: var(--faint);
+  transition: color 0.14s ease;
+}
+
+.writing-link:hover .go-inline,
+.writing-link:focus-visible .go-inline {
+  color: var(--accent);
+}
+
 .chip {
   font: 10px var(--font-jetbrains-mono), ui-monospace, monospace;
   color: var(--muted);

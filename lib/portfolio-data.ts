@@ -3,20 +3,14 @@ export const WHOAMI = {
   bio: "I build full-stack web apps, cloud infrastructure, and IoT systems — from quote wizards and admin dashboards to Terraform pipelines and self-hosted homelabs. Currently finishing my capstone on industrial equipment monitoring. Poke around, and play the game while you're here.",
 };
 
-export const STATS = [
-  { val: "12", sub: "+", label: "projects shipped" },
-  { val: "99", sub: "%", label: "uptime (weather app)" },
-  { val: "150", sub: "", label: "concurrent users", accent: true },
-] as const;
-
-export const STAT_CHART_LABEL = "project activity";
-export const STAT_CHART_HEIGHTS = [55, 68, 72, 85, 100, 78, 90, 82];
-
 export type Project = {
   name: string;
   desc: string;
   tags: string[];
   category?: string;
+  // Where the card links to (repo or live demo). Omit for projects with no
+  // public destination — those cards stay non-clickable rather than 404.
+  url?: string;
 };
 
 export const PROJECTS: Project[] = [
@@ -25,12 +19,14 @@ export const PROJECTS: Project[] = [
     desc: "Capstone IoT platform with RBAC, real-time health scoring, and anomaly alerts.",
     tags: ["Next.js", "Supabase", "PostgreSQL"],
     category: "Capstone",
+    url: "https://smartlog.preyas.ca/login",
   },
   {
     name: "TerraForm",
     desc: "Geospatial solar-site selection for the GTA using Fuzzy TOPSIS and Mapbox.",
     tags: ["PostGIS", "Neo4j", "Mapbox"],
     category: "Data / GIS",
+    url: "https://energy-site.preyas.ca/",
   },
   {
     name: "Custom Blinds Web App",
@@ -49,12 +45,6 @@ export const PROJECTS: Project[] = [
     desc: "Containerized Django app on K8s across GCP, AWS, and DigitalOcean.",
     tags: ["Django", "Docker", "K8s"],
     category: "Cloud",
-  },
-  {
-    name: "Industrial Log Reader",
-    desc: "Shift-based digital logging for industrial use with binary-tree workflow logic.",
-    tags: ["Node.js"],
-    category: "Systems",
   },
   {
     name: "AWS Deployment Workshop",
@@ -94,7 +84,15 @@ export const PROJECTS: Project[] = [
   },
 ];
 
-export const WRITING = [
+export type WritingEntry = {
+  date: string;
+  title: string;
+  read: string;
+  // External article URL. Omit for entries with no published link yet.
+  url?: string;
+};
+
+export const WRITING: WritingEntry[] = [
   {
     date: "2026·04",
     title: "Industrial Equipment Monitoring — Capstone Report",
@@ -111,11 +109,29 @@ export const WRITING = [
     read: "Fuzzy TOPSIS · solar GIS",
   },
   {
+    date: "2025·03",
+    title: "VPCs, A Deeper Look into Virtual Networks",
+    read: "Networking · Medium",
+    url: "https://medium.com/@preyaspatel552/vpcs-a-deeper-look-into-virtual-networks-55076f91b387",
+  },
+  {
+    date: "2025·03",
+    title: "Packet Sniffing",
+    read: "Networking · Medium",
+    url: "https://medium.com/@preyaspatel552/packet-sniffing-a322695c07f0",
+  },
+  {
+    date: "2025·03",
+    title: "Mastering Network Programmability: Tips & Tools",
+    read: "Automation · Medium",
+    url: "https://medium.com/@preyaspatel552/mastering-network-programmability-tips-tools-a7549cf99b14",
+  },
+  {
     date: "2024·10",
     title: "Cross-Platform OS Emulation & Virtualization",
     read: "KVM/QEMU · WSL2",
   },
-] as const;
+];
 
 export const EXPERIENCE = [
   {

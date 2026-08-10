@@ -661,7 +661,7 @@ export default function PortfolioShell() {
                 {photoOk ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src="https://github.com/user-attachments/assets/ff23da97-5359-4a32-896a-3a0e914a7b75"
+                    src="/20260803_083803.jpg"
                     alt="Preyas Patel"
                     width={110}
                     height={110}

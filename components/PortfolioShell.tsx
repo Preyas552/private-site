@@ -643,8 +643,8 @@ export default function PortfolioShell() {
               <div
                 className="mono placeholder-fill avatar"
                 style={{
-                  width: 110,
-                  height: 110,
+                  width: 150,
+                  height: 150,
                   borderRadius: 16,
                   flex: "none",
                   display: "flex",
@@ -663,14 +663,14 @@ export default function PortfolioShell() {
                   <img
                     src="/20260803_083803.jpg"
                     alt="Preyas Patel"
-                    width={110}
-                    height={110}
+                    width={150}
+                    height={150}
                     onError={() => setPhotoOk(false)}
                     style={{
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
-                      objectPosition: "70% center",
+                      objectPosition: "center 20%",
                       display: "block",
                     }}
                   />

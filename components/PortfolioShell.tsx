@@ -638,9 +638,8 @@ export default function PortfolioShell() {
                   </button>
                 </div>
               </div>
-              {/* Drop a square headshot at public/me.jpg. If the file is absent
-                  the <img> fails and we fall back to the hatched placeholder,
-                  so a missing photo never renders a broken-image icon. */}
+              {/* Profile photo source; on load failure we fall back to the
+                  hatched placeholder so no broken-image icon is shown. */}
               <div
                 className="mono placeholder-fill avatar"
                 style={{
@@ -662,7 +661,7 @@ export default function PortfolioShell() {
                 {photoOk ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src="/me.jpg"
+                    src="https://github.com/user-attachments/assets/ff23da97-5359-4a32-896a-3a0e914a7b75"
                     alt="Preyas Patel"
                     width={110}
                     height={110}
@@ -671,6 +670,7 @@ export default function PortfolioShell() {
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
+                      objectPosition: "70% center",
                       display: "block",
                     }}
                   />
